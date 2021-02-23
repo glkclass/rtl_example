@@ -1,0 +1,4 @@
+Pipelined ALU: 
+verilog implementation 
++ 
+Systemverilog testbench: read program (set of asm instructions for execution) from txt file, initialize data/code memory, launch program execution in the ALU, check result after finish.

@@ -1,0 +1,78 @@
+# vsim -l ../tests/results.out -t ps work.SM_TTB 
+# Loading sv_std.std
+# Loading work.SM_TTB
+# Loading work.SM_TB
+# Loading work.SM_CORE
+# Loading work.SM_RAM
+# ** Warning: (vsim-PLI-3691) ../src/SM_TB.sv(106): Expected a system task, not a system function '$fscanf'.
+# 
+#         Region: /SM_TTB/TEST_BENCH/load_program
+# ** Warning: (vsim-PLI-3691) ../src/SM_TB.sv(109): Expected a system task, not a system function '$fscanf'.
+# 
+#         Region: /SM_TTB/TEST_BENCH/load_program
+# ** Warning: (vsim-PLI-3691) ../src/SM_TB.sv(112): Expected a system task, not a system function '$fscanf'.
+# 
+#         Region: /SM_TTB/TEST_BENCH/load_program
+# ** Warning: (vsim-PLI-3691) ../src/SM_TB.sv(115): Expected a system task, not a system function '$fscanf'.
+# 
+#         Region: /SM_TTB/TEST_BENCH/load_program
+#               220000: Loading program from ..\tests\the_code.in ...
+#               650000: Successfuly loaded.
+#              1450000: Test passed. Error =           0, result =          15, ref_result =          15.
+# 
+#              1550000: Loading program from ..\tests\the_code.in ...
+#              2150000: Successfuly loaded.
+#              3150000: Test passed. Error =           0, result =          24, ref_result =          24.
+# 
+#              3250000: Loading program from ..\tests\the_code.in ...
+#              3950000: Successfuly loaded.
+#              4950000: Test passed. Error =           0, result =           1, ref_result =           1.
+# 
+#              5050000: Loading program from ..\tests\the_code.in ...
+#              6050000: Successfuly loaded.
+#              7350000: Test passed. Error =           0, result =          60, ref_result =          60.
+# 
+#              7450000: Loading program from ..\tests\the_code.in ...
+#              8550000: Successfuly loaded.
+#             10350000: Test passed. Error =           0, result =          71, ref_result =          71.
+# 
+#             10450000: Loading program from ..\tests\the_code.in ...
+#             12850000: Successfuly loaded.
+#             17050000: Test passed. Error =           0, result =          73, ref_result =          73.
+# 
+#             17150000: Loading program from ..\tests\the_code.in ...
+#             18050000: Successfuly loaded.
+#             19350000: Test passed. Error =           0, result =         100, ref_result =         100.
+# 
+#             19450000: Loading program from ..\tests\the_code.in ...
+#             20850000: Successfuly loaded.
+#             22850000: Test passed. Error =           0, result =          45, ref_result =          45.
+# 
+#             22950000: Loading program from ..\tests\the_code.in ...
+#             24050000: Successfuly loaded.
+#             25350000: Test passed. Error =           0, result =          54, ref_result =          54.
+# 
+#             25450000: Loading program from ..\tests\the_code.in ...
+#             27350000: Successfuly loaded.
+#             30450000: Test passed. Error =           0, result =          67, ref_result =          67.
+# 
+#             30550000: Loading program from ..\tests\the_code.in ...
+#             31050000: Successfuly loaded.
+#             31850000: Test failed. Error =           1, result =      -31536, ref_result =       34000.
+# 
+#             31950000: Loading program from ..\tests\the_code.in ...
+#             32450000: Successfuly loaded.
+#             33250000: Test failed. Error =           1, result =       31536, ref_result =      -34000.
+# 
+#             33350000: Loading program from ..\tests\the_code.in ...
+#             33950000: Successfuly loaded.
+#             35050000: Test failed. Error =           1, result =           0, ref_result =           0.
+# 
+#             35150000: Loading program from ..\tests\the_code.in ...
+#             35250000: Input TV ..\tests\the_code.in is out.
+#             35250000: Verification is finished
+# 
+# ** Note: Data structure takes 3014704 bytes of memory
+#          Process time 0.00 seconds
+#          $finish    : ../src/SM_TB.sv(248)
+#    Time: 35250 ns  Iteration: 2  Instance: /SM_TTB/TEST_BENCH
