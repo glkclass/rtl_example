@@ -6,28 +6,29 @@ module reg_file
             RSTN, CLK, RD_EN, WR_EN, DIN,
         
         output 
+
             DOUT
     );
-
     localparam
         N_REG = 5, // number of regs
         DATA_WIDTH = 8,
         DATA_VALUE_REG_5 = 8'h33,
-        ADDR_WIDTH = 8,
-        ADDR [N_REG-1 : 0] [ADDR_WIDTH-1 : 0] = {8'h55, 8'h06, 8'hA1, 8'h78, 8'h34};  // reg addresses
+        ADDR_WIDTH = 8;
+
+    localparam [ADDR_WIDTH-1 : 0] ADDR [N_REG-1 : 0]  = '{8'h55, 8'h06, 8'hA1, 8'h78, 8'h34};  // reg addresses
 
 
 
-reg cnt [4-1 : 0],
-    addr_reg [ADDR_WIDTH-1 : 0],
-    data_reg [N_REG-1 : 0] [ADDR_WIDTH-1 : 0];
+reg [4-1 : 0] cnt;
+reg [ADDR_WIDTH-1 : 0] addr_reg;
+reg [ADDR_WIDTH-1 : 0] data_reg [N_REG-1 : 0] ;
 
 
 
 wire addr_shft_en, data_shft_en;
 
-assign addr_shft_en = (cnt < 4'h0F) ? 1:0;
-assign data_shft_en = (cnt >= 4'h0F) ? 1:0;
+assign addr_shft_en = (cnt < 4'h7) ? 1:0;
+assign data_shft_en = (cnt >= 4'h7) ? 1:0;
 
 
 // write data shift reg. Reg 1..4
@@ -49,6 +50,7 @@ generate
                                 end
                         end
                 end // always
+        end
 endgenerate
 
 // read only Reg 5
@@ -56,7 +58,7 @@ always @ (posedge CLK, negedge RSTN)
     begin
         if (!RSTN) 
             begin                            
-                data_reg[ii] <= DATA_VALUE_REG_5;
+                data_reg[N_REG-1] <= DATA_VALUE_REG_5;
             end
         else 
             begin
