@@ -1,5 +1,3 @@
-
-// sm_core module. Contains main core implementation.
 module reg_file
     #(
         parameter
@@ -14,57 +12,79 @@ module reg_file
     (
         input 
             RSTN, CLK, RD_EN, WR_EN, DIN,
-        output 
+        output reg
             DOUT
     );
 
 reg [4-1 : 0] cnt;
 reg [ADDR_WIDTH-1 : 0] addr_reg;
 reg [ADDR_WIDTH-1 : 0] data_reg [N_REG-1 : 0] ;
-reg data_shft_en_1;
+reg 
+    wr_stage, data_shft_en_1;
 
-wire addr_shft_en, data_shft_en, data_shft_en_0;
+wire addr_shft_en, 
+    addr0_shft_en, data_shft_en_0;
+wire [ADDR_WIDTH-1 : 0] addr;
 
-
-assign addr_shft_en = (cnt > 4'h7) ? 1:0;
-assign data_shft_en_0 = (cnt > 4'h0 && cnt <= 4'h7) ? 1:0;
-assign data_shft_en = data_shft_en_0 || data_shft_en_1;
+assign addr_shft_en = (cnt > 4'h8) ? 1:0;
+assign addr0_shft_en = (cnt == 4'h8) ? 1:0;
+assign data_shft_en_0 = (cnt > 4'h0 && cnt <= 4'h8) ? 1:0;
+assign addr = {addr_reg[ADDR_WIDTH-1 : 1], (1'b1 == addr0_shft_en) ? DIN : addr_reg[0]};
 
 // write data shift reg. Reg 1..4
 genvar ii;
 generate
-    for (ii = 0; ii < N_REG-1; ii = ii+1)
+    for (ii = 0; ii < N_REG; ii = ii+1)
         begin: g_data_regs
             always @ (posedge CLK, negedge RSTN) 
                 begin
                     if (!RSTN) 
                         begin                            
-                            data_reg[ii] <= 8'h00;
+                            if (4 != ii)
+                                data_reg[ii] <= 8'h00;
+                            else
+                                data_reg[ii] <= DATA_VALUE_REG_5;
                         end
                     else 
                         begin
-                            if (!addr_shft_en && data_shft_en && ADDR[ii] == addr_reg) 
+                            if (wr_stage) 
                                 begin 
-                                    data_reg[ii][DATA_WIDTH-1 : 0] <= {data_reg[ii][DATA_WIDTH-2 : 0], DIN};
+                                    if (1'b1 == data_shft_en_1 && ADDR[ii] == addr) 
+                                        begin
+                                            data_reg[ii][DATA_WIDTH-1 : 0] <= {data_reg[ii][DATA_WIDTH-2 : 0], DIN};
+                                        end
                                 end
+                            else
+                                begin
+                                    if (1'b1 == data_shft_en_0 && ADDR[ii] == addr) 
+                                        begin
+                                            data_reg[ii][DATA_WIDTH-1 : 0] <= {data_reg[ii][DATA_WIDTH-2 : 0], data_reg[ii][DATA_WIDTH-1]};
+                                        end
+                                end                            
                         end
                 end // always
         end
 endgenerate
 
-// read only Reg 5
+// DOUT
 always @ (posedge CLK, negedge RSTN) 
     begin
         if (!RSTN) 
-            begin                            
-                data_reg[N_REG-1] <= DATA_VALUE_REG_5;
+            begin
+                DOUT <= 1'b0;
             end
         else 
             begin
+                case ( { wr_stage, data_shft_en_0, addr } )
+                    {1'b0, 1'b1, ADDR[0]}: DOUT <= data_reg[0][DATA_WIDTH-1];
+                    {1'b0, 1'b1, ADDR[1]}: DOUT <= data_reg[1][DATA_WIDTH-1];
+                    {1'b0, 1'b1, ADDR[2]}: DOUT <= data_reg[2][DATA_WIDTH-1];
+                    {1'b0, 1'b1, ADDR[3]}: DOUT <= data_reg[3][DATA_WIDTH-1];
+                    {1'b0, 1'b1, ADDR[4]}: DOUT <= data_reg[4][DATA_WIDTH-1];
+                    default : DOUT <= 1'b0;
+                endcase
             end
     end // always
-
-
 
 // addr shift reg
 always @ (posedge CLK, negedge RSTN) 
@@ -77,12 +97,15 @@ always @ (posedge CLK, negedge RSTN)
             begin
                 if (addr_shft_en) 
                     begin 
-                        addr_reg[ADDR_WIDTH-1 : 0] <= {addr_reg[ADDR_WIDTH-2 : 0], DIN};
+                        addr_reg[ADDR_WIDTH-1 : 1] <= {addr_reg[ADDR_WIDTH-2 : 1], DIN};
+                    end
+
+                if (addr0_shft_en) 
+                    begin 
+                        addr_reg[0] <= DIN;
                     end
             end
     end // always
-
-
 
 // write/read cycle count
 always @ (posedge CLK, negedge RSTN) 
@@ -91,12 +114,22 @@ always @ (posedge CLK, negedge RSTN)
             begin
                 cnt <= 4'h0;
                 data_shft_en_1 <= 1'b0;
+                wr_stage <= 1'b0;
             end
         else 
             begin
-                data_shft_en_1 <= data_shft_en_0; // 1 cycle delay for data writing
+                data_shft_en_1 <= data_shft_en_0;
 
-                if (WR_EN) 
+                if (WR_EN)
+                    begin
+                        wr_stage <= 1'b1;
+                    end
+                else if (~data_shft_en_0 & data_shft_en_1) // last cycle of data write
+                    begin
+                        wr_stage <= 1'b0;
+                    end
+                
+                if (WR_EN | RD_EN) 
                     begin 
                         cnt <= 4'hF;
                     end

@@ -14,35 +14,18 @@ add wave -hex sim:/ttb/rd_en
 add wave -hex sim:/ttb/din
 add wave -hex sim:/ttb/dout
 
+add wave -hex sim:/ttb/uut/addr_shft_en
+add wave -hex sim:/ttb/uut/addr0_shft_en
+
+add wave -hex sim:/ttb/uut/data_shft_en_0
+add wave -hex sim:/ttb/uut/data_shft_en_1
+add wave -hex sim:/ttb/uut/wr_stage
+
 add wave -hex sim:/ttb/uut/cnt
 add wave -hex sim:/ttb/uut/addr_reg
+add wave -hex sim:/ttb/uut/addr
 add wave -hex sim:/ttb/uut/data_reg
-add wave -hex sim:/ttb/uut/addr_shft_en
-add wave -hex sim:/ttb/uut/data_shft_en
 
-run 20 us
+add wave -hex sim:/ttb/value
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+run 100 us
