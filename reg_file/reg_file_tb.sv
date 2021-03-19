@@ -9,7 +9,7 @@ module ttb;
         ADDR_WIDTH = 8, // address width
         DATA_WIDTH = 8; // data width
     localparam 
-        [DATA_WIDTH-1 : 0] DATA_VALUE_REG_5 = 8'h33;
+        [DATA_WIDTH-1 : 0] DATA_VALUE_REG_5 = 8'h33; // init value for read only REG #5
     localparam 
         [ADDR_WIDTH-1 : 0] ADDR [N_REG-1 : 0]  = '{8'h55, 8'h06, 8'hA1, 8'h78, 8'h34};  // reg addresses
 
@@ -20,7 +20,7 @@ module ttb;
         };  // reg values
 
 // hash to check write/read results
-bit [DATA_WIDTH-1 : 0] reg_copy[bit [ADDR_WIDTH-1 : 0]];
+logic [DATA_WIDTH-1 : 0] reg_copy[logic [ADDR_WIDTH-1 : 0]];
 
 reg 
     rst = 1'b0, 
@@ -35,6 +35,7 @@ reg [DATA_WIDTH-1 : 0]
     value_0 = 8'h00, 
     value_1 = 8'h00;
 
+// store values to TB hash during reg write. Will be used for future reg read checks.
 task store2reg_copy(
     input [ADDR_WIDTH-1 : 0] addr, [DATA_WIDTH-1 : 0] data);
     if (ADDR[N_REG-1] != addr) // read only reg
@@ -42,7 +43,6 @@ task store2reg_copy(
             reg_copy[addr] = data;
         end
 endtask
-
 
 // read single reg
 task read_reg(
@@ -71,6 +71,7 @@ task read_reg(
         $error ("%t: Read value: 0x%H from REG[0x%H]. Expected: 0x%H", $time, value, addr, reg_copy[addr]);
 endtask
 
+// 2 reads without gap between them
 task read_2_reg_wo_gap(
     input [ADDR_WIDTH-1 : 0] addr_0, addr_1);
 
@@ -148,6 +149,7 @@ task write_reg(
     $display ("%t: Write value: 0x%H to REG[0x%H]", $time, value, addr);
 endtask
 
+// 2 writes without gap between them
 task write_2_reg_wo_gap(
     input [ADDR_WIDTH-1 : 0] addr_0, addr_1, [DATA_WIDTH-1 : 0] value_0, value_1);
 
@@ -195,6 +197,7 @@ task write_2_reg_wo_gap(
 
 endtask
 
+// write-read without gap between them
 task write_read_wo_gap(
     input [ADDR_WIDTH-1 : 0] addr_0, addr_1, [DATA_WIDTH-1 : 0] value_0);
 
@@ -242,10 +245,10 @@ task write_read_wo_gap(
         $error ("%t: Read value: 0x%H from REG[0x%H]. Expected: 0x%H", $time, value_1, addr_1, reg_copy[addr_1]);   
 endtask
 
-// write / read regs
+// Check reg_file. Write / Read regs, use different scenario.
 initial begin
     #(2*RST_INTERVAL)
-    reg_copy[ADDR[N_REG-1]] = DATA_VALUE_REG_5; // init read only reg_copy
+    reg_copy[ADDR[N_REG-1]] = DATA_VALUE_REG_5; // init reg_copy for read only Reg #5
 
     write_reg(ADDR[0], VALUE[0]);
     read_reg(ADDR[0]);
@@ -264,6 +267,8 @@ initial begin
     read_reg(ADDR[0]);
     read_reg(ADDR[1]);
     
+    write_read_wo_gap(ADDR[4], ADDR[4], VALUE[1]);
+
     write_read_wo_gap(ADDR[2], ADDR[3], VALUE[2]);
 
     read_2_reg_wo_gap(ADDR[0], ADDR[1]);
@@ -291,15 +296,13 @@ initial begin
         #(CLK_PERIOD/2) clk = ~clk;
 end
 
-
-
 reg_file
 #(
     .N_REG(N_REG),
     .ADDR_WIDTH(ADDR_WIDTH),
     .DATA_WIDTH(DATA_WIDTH),
     .DATA_VALUE_REG_5(DATA_VALUE_REG_5),
-    .ADDR(ADDR)
+    .ADDR({ADDR[4], ADDR[3], ADDR[2], ADDR[1], ADDR[0]})
 )
 
 uut
