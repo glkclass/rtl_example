@@ -60,10 +60,6 @@ generate
                                                     data_reg[ii][DATA_WIDTH-1 : 0] <= {data_reg[ii][DATA_WIDTH-2 : 0], DIN};
                                                 end
                                         end
-                                    else
-                                        begin
-                                            data_reg[ii] <= data_reg[ii];
-                                        end
                                 end
                             else
                                 begin
@@ -141,7 +137,7 @@ always @ (posedge CLK, negedge RSTN)
                         wr_stage <= 1'b0;
                     end
                 
-                if (WR_EN | RD_EN) 
+                if ((1'b1 == WR_EN || 1'b1 == RD_EN) && 4'h0 == cnt)
                     begin 
                         cnt <= 4'hF;
                     end
@@ -154,12 +150,5 @@ always @ (posedge CLK, negedge RSTN)
                     end
             end
     end // always
-
-
-
-
-
-
-
 
 endmodule

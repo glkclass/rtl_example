@@ -197,6 +197,40 @@ task write_2_reg_wo_gap(
 
 endtask
 
+// try to perform write while previous operation(write or read) is still in the process
+task write_while_busy_reg(
+    input [ADDR_WIDTH-1 : 0] addr, [DATA_WIDTH-1 : 0] value);
+
+    @(posedge clk);
+    wr_en = 1'b1;
+    
+    for (int i = 0; i < 8; i++)
+        begin
+            @(posedge clk);
+            if (0 == i) 
+                wr_en = 1'b0;
+
+            if (3 == i) 
+                wr_en = 1'b1;
+
+            if (4 == i) 
+                wr_en = 1'b0;
+
+            din = addr[ADDR_WIDTH-1-i];
+        end
+
+    for (int i = 0; i < 8; i++)
+        begin
+            @(posedge clk);
+            din = value[DATA_WIDTH-1-i];
+        end
+    @(posedge clk);
+    din = 1'b0;
+    
+    store2reg_copy(addr, value);
+    $display ("%t: Write value: 0x%H to REG[0x%H]", $time, value, addr);
+endtask
+
 // write-read without gap between them
 task write_read_wo_gap(
     input [ADDR_WIDTH-1 : 0] addr_0, addr_1, [DATA_WIDTH-1 : 0] value_0);
@@ -266,7 +300,10 @@ initial begin
     write_2_reg_wo_gap(ADDR[0], ADDR[1], VALUE[2], VALUE[3]);
     read_reg(ADDR[0]);
     read_reg(ADDR[1]);
-    
+
+    write_while_busy_reg(ADDR[0], VALUE[0]);
+    read_reg(ADDR[0]);
+
     write_read_wo_gap(ADDR[4], ADDR[4], VALUE[1]);
 
     write_read_wo_gap(ADDR[2], ADDR[3], VALUE[2]);
