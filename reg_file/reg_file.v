@@ -31,7 +31,7 @@ assign addr0_shft_en = (cnt == 4'h8) ? 1:0;
 assign data_shft_en_0 = (cnt > 4'h0 && cnt <= 4'h8) ? 1:0;
 assign addr = {addr_reg[ADDR_WIDTH-1 : 1], (1'b1 == addr0_shft_en) ? DIN : addr_reg[0]};
 
-// write data shift reg. Reg 1..4
+// write data shift reg. Reg 1..5
 genvar ii;
 generate
     for (ii = 0; ii < N_REG; ii = ii+1)
@@ -49,9 +49,16 @@ generate
                         begin
                             if (wr_stage) 
                                 begin 
-                                    if (1'b1 == data_shft_en_1 && ADDR[ii] == addr) 
+                                    if (N_REG-1 != ii) // last reg is read only
                                         begin
-                                            data_reg[ii][DATA_WIDTH-1 : 0] <= {data_reg[ii][DATA_WIDTH-2 : 0], DIN};
+                                            if (1'b1 == data_shft_en_1 && ADDR[ii] == addr) 
+                                                begin
+                                                    data_reg[ii][DATA_WIDTH-1 : 0] <= {data_reg[ii][DATA_WIDTH-2 : 0], DIN};
+                                                end
+                                        end
+                                    else
+                                        begin
+                                            data_reg[ii] <= data_reg[ii];
                                         end
                                 end
                             else
@@ -107,7 +114,7 @@ always @ (posedge CLK, negedge RSTN)
             end
     end // always
 
-// write/read cycle count
+// write/read cycle count & few more things
 always @ (posedge CLK, negedge RSTN) 
     begin
         if (!RSTN) 

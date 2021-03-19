@@ -28,4 +28,4 @@ add wave -hex sim:/ttb/uut/data_reg
 
 add wave -hex sim:/ttb/value
 
-run 100 us
+run 100us

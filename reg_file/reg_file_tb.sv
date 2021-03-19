@@ -19,6 +19,7 @@ module ttb;
             8'hAA, 8'h55, 8'h00, 8'h01, 8'h10
         };  // reg values
 
+// hash to check write/read results
 bit [DATA_WIDTH-1 : 0] reg_copy[bit [ADDR_WIDTH-1 : 0]];
 
 reg 
@@ -29,8 +30,19 @@ reg
     din = 1'b0,
     dout;
 
-reg 
-    [DATA_WIDTH-1 : 0] value = 8'h00;
+reg [DATA_WIDTH-1 : 0] 
+    value = 8'h00, 
+    value_0 = 8'h00, 
+    value_1 = 8'h00;
+
+task store2reg_copy(
+    input [ADDR_WIDTH-1 : 0] addr, [DATA_WIDTH-1 : 0] data);
+    if (ADDR[N_REG-1] != addr) // read only reg
+        begin
+            reg_copy[addr] = data;
+        end
+endtask
+
 
 // read single reg
 task read_reg(
@@ -59,6 +71,56 @@ task read_reg(
         $error ("%t: Read value: 0x%H from REG[0x%H]. Expected: 0x%H", $time, value, addr, reg_copy[addr]);
 endtask
 
+task read_2_reg_wo_gap(
+    input [ADDR_WIDTH-1 : 0] addr_0, addr_1);
+
+    @(posedge clk);
+    rd_en = 1'b1;
+    
+    for (int i = 0; i < 8; i++)
+        begin
+            @(posedge clk);
+            if (0 == i) 
+                rd_en = 1'b0;
+            din = addr_0[ADDR_WIDTH-1-i];
+        end
+
+    @(posedge clk);
+    din = 1'b0;
+    for (int i = 0; i < 8; i++)
+        begin
+            @(posedge clk);
+            if (7 == i) 
+                rd_en = 1'b1;
+            value_0[DATA_WIDTH-1-i] = dout;
+        end
+
+    for (int i = 0; i < 8; i++)
+        begin
+            @(posedge clk);
+            if (0 == i) 
+                rd_en = 1'b0;
+            din = addr_1[ADDR_WIDTH-1-i];
+        end
+
+    @(posedge clk);
+    din = 1'b0;
+    for (int i = 0; i < 8; i++)
+        begin
+            @(posedge clk);
+            value_1[DATA_WIDTH-1-i] = dout;
+        end
+
+    $display ("%t: Read value: 0x%H from REG[0x%H]", $time, value_0, addr_0);
+    $display ("%t: Read value: 0x%H from REG[0x%H]", $time, value_1, addr_1);
+
+    if (value_0 != reg_copy[addr_0])
+        $error ("%t: Read value: 0x%H from REG[0x%H]. Expected: 0x%H", $time, value_0, addr_0, reg_copy[addr_0]);
+
+    if (value_1 != reg_copy[addr_1])
+        $error ("%t: Read value: 0x%H from REG[0x%H]. Expected: 0x%H", $time, value_1, addr_1, reg_copy[addr_1]);
+endtask
+
 // write single reg
 task write_reg(
     input [ADDR_WIDTH-1 : 0] addr, [DATA_WIDTH-1 : 0] value);
@@ -82,11 +144,10 @@ task write_reg(
     @(posedge clk);
     din = 1'b0;
     
-    reg_copy[addr] = value;
+    store2reg_copy(addr, value);
     $display ("%t: Write value: 0x%H to REG[0x%H]", $time, value, addr);
 endtask
 
-// write 2 regs wo gap
 task write_2_reg_wo_gap(
     input [ADDR_WIDTH-1 : 0] addr_0, addr_1, [DATA_WIDTH-1 : 0] value_0, value_1);
 
@@ -126,26 +187,75 @@ task write_2_reg_wo_gap(
     @(posedge clk);
     din = 1'b0;
 
-    reg_copy[addr_0] = value_0;
-    reg_copy[addr_1] = value_1;
+    store2reg_copy(addr_0, value_0);
+    store2reg_copy(addr_1, value_1);
+
     $display ("%t: Write value: 0x%H to REG[0x%H]", $time, value_0, addr_0);
     $display ("%t: Write value: 0x%H to REG[0x%H]", $time, value_1, addr_1);
+
 endtask
 
+task write_read_wo_gap(
+    input [ADDR_WIDTH-1 : 0] addr_0, addr_1, [DATA_WIDTH-1 : 0] value_0);
+
+    @(posedge clk);
+    wr_en = 1'b1;
+    
+    for (int i = 0; i < 8; i++)
+        begin
+            @(posedge clk);
+            if (0 == i) 
+                wr_en = 1'b0;
+            din = addr_0[ADDR_WIDTH-1-i];
+        end
+
+    for (int i = 0; i < 8; i++)
+        begin
+            @(posedge clk);
+            if (7 == i) 
+                rd_en = 1'b1;
+            din = value_0[DATA_WIDTH-1-i];
+        end
+
+    for (int i = 0; i < 8; i++)
+        begin
+            @(posedge clk);
+            if (0 == i) 
+                rd_en = 1'b0;
+            din = addr_1[ADDR_WIDTH-1-i];
+        end
+
+    @(posedge clk);
+    din = 1'b0;
+    
+    for (int i = 0; i < 8; i++)
+        begin
+            @(posedge clk);
+            value_1[DATA_WIDTH-1-i] = dout;
+        end
+
+    store2reg_copy(addr_0, value_0);
+    $display ("%t: Write value: 0x%H to REG[0x%H]", $time, value_0, addr_0);
+    $display ("%t: Read value: 0x%H from REG[0x%H]", $time, value_1, addr_1);
+
+    if (value_1 != reg_copy[addr_1])
+        $error ("%t: Read value: 0x%H from REG[0x%H]. Expected: 0x%H", $time, value_1, addr_1, reg_copy[addr_1]);   
+endtask
 
 // write / read regs
 initial begin
     #(2*RST_INTERVAL)
-    
-    write_reg(ADDR[0], VALUE[0]);
-    read_reg(ADDR[0]);    
+    reg_copy[ADDR[N_REG-1]] = DATA_VALUE_REG_5; // init read only reg_copy
 
-    for (int i = 0; i < 4; i++) 
+    write_reg(ADDR[0], VALUE[0]);
+    read_reg(ADDR[0]);
+
+    for (int i = 0; i < 5; i++) 
         begin
             write_reg(ADDR[i], VALUE[i]);
         end
 
-    for (int i = 0; i < 4; i++) 
+    for (int i = 0; i < 5; i++) 
         begin
             read_reg(ADDR[i]);
         end
@@ -153,18 +263,20 @@ initial begin
     write_2_reg_wo_gap(ADDR[0], ADDR[1], VALUE[2], VALUE[3]);
     read_reg(ADDR[0]);
     read_reg(ADDR[1]);
+    
+    write_read_wo_gap(ADDR[2], ADDR[3], VALUE[2]);
 
-    for (int i = 0; i < 4; i++) 
+    read_2_reg_wo_gap(ADDR[0], ADDR[1]);
+
+    for (int i = 0; i < 5; i++) 
         begin
-            write_reg(ADDR[i], VALUE[4 + i]);
+            write_reg(ADDR[i], VALUE[5 + i]);
             repeat(5)
                 @(posedge clk);
             read_reg(ADDR[i]);
-
         end
-    $finish("The End");
+    $display("The End");
 end
-
 
 // RST
 initial begin
