@@ -1,4 +1,4 @@
-//TTB. Generate RST, CLK signals. Read inputs, write output from/to file
+//TTB. Generate RST, CLK signals. Run test, print results to stdout.
 module ttb;
     localparam 
         RST_INTERVAL = 220,

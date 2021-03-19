@@ -1,0 +1,11 @@
+1. Synthesized Verilog RTL-implemntation: reg_file.v.
+Description: 
+	Five 8-bit regs, can be read/written via SPI according to spec. Reg # 5 is read only.
+	If write/read is requested while previous operation is in the progress - it's ignored and doesn't corrupt active transaction.
+
+2. SystemVerilog TestBench: reg_file_tb.sv.
+Description: 
+	Write/read data, check functionality (use hash array containing relevant Reg data (stored during write) to check read results).
+	If read data doesn't match written one - appropriate error message is printed to stdout.
+	Use different scenario of write/read: single write, single read, 
+	two consecutive operations(write or read) withot gap between them, write while the previous operation isn't finished, ...
