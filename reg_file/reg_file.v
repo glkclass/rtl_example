@@ -30,9 +30,9 @@ wire addr_shft_en,
 
 wire [ADDR_WIDTH-1 : 0] addr;
 
-assign addr_shft_en = (cnt > 4'h8) ? 1:0;
-assign addr0_shft_en = (cnt == 4'h8) ? 1:0;
-assign data_shft_en_0 = (cnt > 4'h0 && cnt <= 4'h8) ? 1:0;
+assign addr_shft_en = (cnt > 4'h8) ? 1'b1:1'b0;
+assign addr0_shft_en = (cnt == 4'h8) ? 1'b1:1'b0;
+assign data_shft_en_0 = (cnt > 4'h0 && cnt <= 4'h8) ? 1'b1:1'b0;
 assign addr = {addr_reg[ADDR_WIDTH-1 : 1], (1'b1 == addr0_shft_en) ? DIN : addr_reg[0]};
 
 // write/read data shift reg. Reg #1..5

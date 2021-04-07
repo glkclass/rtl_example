@@ -1,6 +1,9 @@
 //TTB. Generate RST, CLK signals. Run test, print results to stdout.
+import "DPI-C" function string getenv(input string env_name);
+
 module ttb;
     localparam 
+        T_DR_DELAY = 0,
         RST_INTERVAL = 220,
         CLK_PERIOD = 100,
         N_VALUES = 10, // number of different reg values to be written and read back
@@ -49,18 +52,18 @@ task read_reg(
     input [ADDR_WIDTH-1 : 0] addr);
 
     @(posedge clk);
-    rd_en = 1'b1;
+    #T_DR_DELAY rd_en = 1'b1;
     
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
             if (0 == i) 
-                rd_en = 1'b0;
-            din = addr[ADDR_WIDTH-1-i];
+                #T_DR_DELAY rd_en = 1'b0;
+            #T_DR_DELAY din = addr[ADDR_WIDTH-1-i];
         end
 
     @(posedge clk);
-    din = 1'b0;
+    #T_DR_DELAY din = 1'b0;
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
@@ -76,23 +79,23 @@ task read_2_reg_wo_gap(
     input [ADDR_WIDTH-1 : 0] addr_0, addr_1);
 
     @(posedge clk);
-    rd_en = 1'b1;
+    #T_DR_DELAY rd_en = 1'b1;
     
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
             if (0 == i) 
-                rd_en = 1'b0;
-            din = addr_0[ADDR_WIDTH-1-i];
+                #T_DR_DELAY rd_en = 1'b0;
+            #T_DR_DELAY din = addr_0[ADDR_WIDTH-1-i];
         end
 
     @(posedge clk);
-    din = 1'b0;
+    #T_DR_DELAY din = 1'b0;
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
             if (7 == i) 
-                rd_en = 1'b1;
+                #T_DR_DELAY rd_en = 1'b1;
             value_0[DATA_WIDTH-1-i] = dout;
         end
 
@@ -100,12 +103,12 @@ task read_2_reg_wo_gap(
         begin
             @(posedge clk);
             if (0 == i) 
-                rd_en = 1'b0;
-            din = addr_1[ADDR_WIDTH-1-i];
+                #T_DR_DELAY rd_en = 1'b0;
+            #T_DR_DELAY din = addr_1[ADDR_WIDTH-1-i];
         end
 
     @(posedge clk);
-    din = 1'b0;
+    #T_DR_DELAY din = 1'b0;
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
@@ -127,23 +130,23 @@ task write_reg(
     input [ADDR_WIDTH-1 : 0] addr, [DATA_WIDTH-1 : 0] value);
 
     @(posedge clk);
-    wr_en = 1'b1;
+    #T_DR_DELAY wr_en = 1'b1;
     
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
             if (0 == i) 
-                wr_en = 1'b0;
-            din = addr[ADDR_WIDTH-1-i];
+                #T_DR_DELAY wr_en = 1'b0;
+            #T_DR_DELAY din = addr[ADDR_WIDTH-1-i];
         end
 
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
-            din = value[DATA_WIDTH-1-i];
+            #T_DR_DELAY din = value[DATA_WIDTH-1-i];
         end
     @(posedge clk);
-    din = 1'b0;
+    #T_DR_DELAY din = 1'b0;
     
     store2reg_copy(addr, value);
     $display ("%t: Write value: 0x%H to REG[0x%H]", $time, value, addr);
@@ -154,40 +157,40 @@ task write_2_reg_wo_gap(
     input [ADDR_WIDTH-1 : 0] addr_0, addr_1, [DATA_WIDTH-1 : 0] value_0, value_1);
 
     @(posedge clk);
-    wr_en = 1'b1;
+    #T_DR_DELAY wr_en = 1'b1;
     
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
             if (0 == i) 
-                wr_en = 1'b0;
-            din = addr_0[ADDR_WIDTH-1-i];
+                #T_DR_DELAY wr_en = 1'b0;
+            #T_DR_DELAY din = addr_0[ADDR_WIDTH-1-i];
         end
 
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
             if (7 == i) 
-                wr_en = 1'b1;
-            din = value_0[DATA_WIDTH-1-i];
+                #T_DR_DELAY wr_en = 1'b1;
+            #T_DR_DELAY din = value_0[DATA_WIDTH-1-i];
         end
 
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
             if (0 == i) 
-                wr_en = 1'b0;
-            din = addr_1[ADDR_WIDTH-1-i];
+                #T_DR_DELAY wr_en = 1'b0;
+            #T_DR_DELAY din = addr_1[ADDR_WIDTH-1-i];
         end
 
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
-            din = value_1[DATA_WIDTH-1-i];
+            #T_DR_DELAY din = value_1[DATA_WIDTH-1-i];
         end
 
     @(posedge clk);
-    din = 1'b0;
+    #T_DR_DELAY din = 1'b0;
 
     store2reg_copy(addr_0, value_0);
     store2reg_copy(addr_1, value_1);
@@ -202,30 +205,30 @@ task write_while_busy_reg(
     input [ADDR_WIDTH-1 : 0] addr, [DATA_WIDTH-1 : 0] value);
 
     @(posedge clk);
-    wr_en = 1'b1;
+    #T_DR_DELAY wr_en = 1'b1;
     
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
             if (0 == i) 
-                wr_en = 1'b0;
+                #T_DR_DELAY wr_en = 1'b0;
 
             if (3 == i) 
-                wr_en = 1'b1;
+                #T_DR_DELAY wr_en = 1'b1;
 
             if (4 == i) 
-                wr_en = 1'b0;
+                #T_DR_DELAY wr_en = 1'b0;
 
-            din = addr[ADDR_WIDTH-1-i];
+            #T_DR_DELAY din = addr[ADDR_WIDTH-1-i];
         end
 
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
-            din = value[DATA_WIDTH-1-i];
+            #T_DR_DELAY din = value[DATA_WIDTH-1-i];
         end
     @(posedge clk);
-    din = 1'b0;
+    #T_DR_DELAY din = 1'b0;
     
     store2reg_copy(addr, value);
     $display ("%t: Write value: 0x%H to REG[0x%H]", $time, value, addr);
@@ -236,34 +239,34 @@ task write_read_wo_gap(
     input [ADDR_WIDTH-1 : 0] addr_0, addr_1, [DATA_WIDTH-1 : 0] value_0);
 
     @(posedge clk);
-    wr_en = 1'b1;
+    #T_DR_DELAY wr_en = 1'b1;
     
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
             if (0 == i) 
-                wr_en = 1'b0;
-            din = addr_0[ADDR_WIDTH-1-i];
+                #T_DR_DELAY wr_en = 1'b0;
+            #T_DR_DELAY din = addr_0[ADDR_WIDTH-1-i];
         end
 
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
             if (7 == i) 
-                rd_en = 1'b1;
-            din = value_0[DATA_WIDTH-1-i];
+                #T_DR_DELAY rd_en = 1'b1;
+            #T_DR_DELAY din = value_0[DATA_WIDTH-1-i];
         end
 
     for (int i = 0; i < 8; i++)
         begin
             @(posedge clk);
             if (0 == i) 
-                rd_en = 1'b0;
-            din = addr_1[ADDR_WIDTH-1-i];
+                #T_DR_DELAY rd_en = 1'b0;
+            #T_DR_DELAY din = addr_1[ADDR_WIDTH-1-i];
         end
 
     @(posedge clk);
-    din = 1'b0;
+    #T_DR_DELAY din = 1'b0;
     
     for (int i = 0; i < 8; i++)
         begin
@@ -280,58 +283,63 @@ task write_read_wo_gap(
 endtask
 
 // Check reg_file. Write / Read regs, use different scenario.
-initial begin
-    #(2*RST_INTERVAL)
-    reg_copy[ADDR[N_REG-1]] = DATA_VALUE_REG_5; // init reg_copy for read only Reg #5
+initial 
+    begin
+        #(2*RST_INTERVAL)
+        reg_copy[ADDR[N_REG-1]] = DATA_VALUE_REG_5; // init reg_copy for read only Reg #5
 
-    write_reg(ADDR[0], VALUE[0]);
-    read_reg(ADDR[0]);
+        write_reg(ADDR[0], VALUE[0]);
+        read_reg(ADDR[0]);
 
-    for (int i = 0; i < 5; i++) 
-        begin
-            write_reg(ADDR[i], VALUE[i]);
-        end
+        for (int i = 0; i < 5; i++) 
+            begin
+                write_reg(ADDR[i], VALUE[i]);
+            end
 
-    for (int i = 0; i < 5; i++) 
-        begin
-            read_reg(ADDR[i]);
-        end
-    
-    write_2_reg_wo_gap(ADDR[0], ADDR[1], VALUE[2], VALUE[3]);
-    read_reg(ADDR[0]);
-    read_reg(ADDR[1]);
+        for (int i = 0; i < 5; i++) 
+            begin
+                read_reg(ADDR[i]);
+            end
+        
+        write_2_reg_wo_gap(ADDR[0], ADDR[1], VALUE[2], VALUE[3]);
+        read_reg(ADDR[0]);
+        read_reg(ADDR[1]);
 
-    write_while_busy_reg(ADDR[0], VALUE[0]);
-    read_reg(ADDR[0]);
+        write_while_busy_reg(ADDR[0], VALUE[0]);
+        read_reg(ADDR[0]);
 
-    write_read_wo_gap(ADDR[4], ADDR[4], VALUE[1]);
+        write_read_wo_gap(ADDR[4], ADDR[4], VALUE[1]);
 
-    write_read_wo_gap(ADDR[2], ADDR[3], VALUE[2]);
+        write_read_wo_gap(ADDR[2], ADDR[3], VALUE[2]);
 
-    read_2_reg_wo_gap(ADDR[0], ADDR[1]);
+        read_2_reg_wo_gap(ADDR[0], ADDR[1]);
 
-    for (int i = 0; i < 5; i++) 
-        begin
-            write_reg(ADDR[i], VALUE[5 + i]);
-            repeat(5)
-                @(posedge clk);
-            read_reg(ADDR[i]);
-        end
-    $display("The End");
-end
+        for (int i = 0; i < 5; i++) 
+            begin
+                write_reg(ADDR[i], VALUE[5 + i]);
+                repeat(5)
+                    @(posedge clk);
+                read_reg(ADDR[i]);
+            end
+        $display("The End");
+        if (getenv("MSIM") != "1") 
+            $finish;
+    end
 
 // RST
-initial begin
-    rst = 1'b0;
-    #(RST_INTERVAL) rst = 1'b1;
-end
+initial 
+    begin
+        rst = 1'b0;
+        #(RST_INTERVAL) rst = 1'b1;
+    end
 
 // CLK
-initial begin
-    clk = 1'b0;
-    forever
-        #(CLK_PERIOD/2) clk = ~clk;
-end
+initial 
+    begin
+        clk = 1'b0;
+        forever
+            #(CLK_PERIOD/2) clk = ~clk;
+    end
 
 reg_file
 #(
@@ -341,7 +349,6 @@ reg_file
     .DATA_VALUE_REG_5(DATA_VALUE_REG_5),
     .ADDR({ADDR[4], ADDR[3], ADDR[2], ADDR[1], ADDR[0]})
 )
-
 uut
 (
     .RSTN(rst),
