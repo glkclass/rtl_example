@@ -1,0 +1,18 @@
+-sv
+-d DUTB
+
+#DUT
+../../i2c_csi_tester.srcs/sources_1/new/TriggerSource.v
+../../i2c_csi_tester.srcs/sources_1/new/Shutter.v
+../../i2c_csi_tester.srcs/sources_1/new/SensStreamer.v
+../../i2c_csi_tester.srcs/sources_1/new/ResetBridge.v
+../../i2c_csi_tester.srcs/sources_1/new/ProgressiveStreamer.v
+../../i2c_csi_tester.srcs/sources_1/new/PixelTransform.v
+../../i2c_csi_tester.srcs/sources_1/new/LedBlinker.v
+../../i2c_csi_tester.srcs/sources_1/new/InterlacedStreamer.v
+../../i2c_csi_tester.srcs/sources_1/new/CCIR656.v
+../../i2c_csi_tester.srcs/sources_1/new/top.v
+
+#TSV TB
+../src/tb/proxy_board_tb.sv
+../src/tb/tsv_top.sv
