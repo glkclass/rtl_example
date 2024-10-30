@@ -1,0 +1,255 @@
+{
+    
+    "index_exclude_patterns": ["~/design/git_forks/embeddedsw"],
+
+    "build_systems": 
+    [
+ 
+        {
+            "name": "Project: SV Build",
+            "file_regex": "",
+            "selector": "source.systemverilog",
+            // "working_dir": "/home/anton.voloshchuk/design/calibration/oct640-7a-usb/tsv/runs",
+            "working_dir": "/home/anton.voloshchuk/design/fpga-bitstream/tb/runs",            
+            // "working_dir": "/tmp/runs",            
+            "syntax": "Packages/User/Colored_build_output.sublime-syntax",
+            "shell_cmd": "echo 'Define build system, file regex, colored build output'",
+            // "env": { "DESIGN": "/home/anton.voloshchuk/design", "VIVADO_SETTINGS": "/tools/Xilinx/Vivado/2023.2/settings64.sh"},
+
+            "variants":
+                [
+                    // Vivado
+                    {
+                        "name": "compile",
+                        "file_regex": "(?:ERROR|WARNING): \\[(?:[^\\]]+)\\] (?:[^\\[]+) \\[(.+):(\\d+)\\]",
+                        "shell_cmd": "echo Vivado toolchain: compile $file in `pwd` ; source /tools/Xilinx/Vivado/2023.2/settings64.sh ; xvlog -f /home/anton.voloshchuk/design/dutb/util/util_file_opt.list ; xvlog -sv $file  ",
+                    },
+                    {
+                        "name": "build",
+                        "file_regex": "(?:ERROR|WARNING): \\[(?:[^\\]]+)\\] (?:[^\\[]+) \\[(.+):(\\d+)\\]",
+                        "shell_cmd": "echo Vivado toolchain: elaborate in `pwd`; source ../scripts/build.sh",
+                    },
+                    {
+                        "name": "clean",
+                        "file_regex": "(?:ERROR|WARNING): \\[(?:[^\\]]+)\\] (?:[^\\[]+) \\[(.+):(\\d+)\\]",
+                        "shell_cmd": "echo Vivado toolchain: clean in `pwd`; rm -rf *",
+                    },
+                    {
+                        "name": "run",
+                        "shell_cmd": "echo Vivado toolchain: simulate in `pwd`; source /tools/Xilinx/Vivado/2023.2/settings64.sh ; xsim sim_snapshot -R  ",
+                    },
+                    {
+                        "name": "build&run",
+                        "shell_cmd": "echo Vivado toolchain: elaborate and simulate in `pwd`; source ../scripts/build.sh ; xsim sim_snapshot -R  ",
+                    },
+            ],
+        },
+
+        {
+            "name": "Project: C Cross Build",
+            "file_regex": "^(.*):([0-9]+):([0-9]+): (.*)$",
+            "selector": "source.c",
+            "working_dir": "/home/anton.voloshchuk/design/riscv-firmware-oko/i2c/Debug",
+            "syntax": "Packages/User/Colored_build_output.sublime-syntax",
+            "shell_cmd": "echo Define build system, file regex, colored build output",
+            "env":{},
+
+            "variants":
+                [
+                    // Vitis
+                    {
+                        "name": "compile",
+                        "shell_cmd": "echo Vitis toolchain: compile $file; source /tools/Xilinx/Vitis/2023.2/settings64.sh ; mb-gcc -Wall -O2 -c -I../src/include -I/home/anton.voloshchuk/design/riscv-firmware-oko/top/export/top/sw/top/standalone_domain/bspinclude/include $file"
+                    },
+                    {
+                        "name": "build",
+                        "shell_cmd": "echo Vitis toolchain: make ; source /tools/Xilinx/Vitis/2023.2/settings64.sh ; make all"
+                    },
+                    {
+                        "name": "clean",
+                        "shell_cmd": "echo Vitis toolchain: make ; source /tools/Xilinx/Vitis/2023.2/settings64.sh ; make clean"
+                    }
+                    // 
+                ]
+        },
+
+        {
+			"file_regex": "^\\s*File \"(...*?)\", line ([0-9]*)",
+			"name": "Anaconda Python Builder",
+			"selector": "source.python",
+			"shell_cmd": "\"python3\" -m py_compile \"$file\"",
+            "env": { "AVV_DEBUG": "1",},
+            /*"file_regex": "^\\s*File \"(...*?)\", line ([0-9]*)",*/
+            "syntax": "Packages/User/Colored_build_output.sublime-syntax",
+            "variants":
+                [
+                    {
+                        "name": "run",
+                        "shell_cmd": "\"python3\" -u \"$file\"",
+                    },
+            ],
+		},
+    ],
+
+
+
+    "folders":
+    [
+
+
+
+        {
+            "name": "tmp",
+            /*"folder_exclude_patterns": [],*/
+            "path": "tmp",
+        },
+
+        // {
+        //     "name": "sublime_backups",
+        //     "path": "~/sublime_backups",
+        // },
+
+        // {
+        //     "name": "home",
+        //     "path": "/home/anton.voloshchuk",
+        // },
+  
+        // {
+        //     "name": "Vico",
+        //     "path": "~/design/Vico",
+        // },
+
+        // {
+        //     "name": "rtl_example",
+        //     "path": "~/design/rtl_example",
+        // },
+
+        // {
+        //     "name": "misc",
+        //     "path": "~/design/misc",
+        // },
+
+        // {
+        //     "name": "scrpt",
+        //     "path": "~/design/scrpt",
+        // },
+
+        {
+            "name": "Sublime User Packages",
+            "path": "~/.config/sublime-text/Packages/User/",
+            "folder_exclude_patterns": []
+        },
+
+        // {
+        //     "name": "Sublime-User",
+        //     "path": "~/design/Sublime-User",
+        // },
+
+        // {
+        //     "name": "gitlab_server",
+        //     "path": "~/design/gitlab server",
+        // },
+
+        // {
+        //     "name": "oct640_7a_uvc",
+        //     "path": "~/design/oct640_7a_uvc",
+        // },
+
+
+        
+        {
+            "name": "embeddedsw",
+            "path": "~/design/git_forks/embeddedsw",
+        },
+
+        // {
+        //     "name": "core_spiflash",
+        //     "path": "~/design/git_forks/core_spiflash",
+        // },
+
+        // {
+        //     "name": "core_usb_bridge",
+        //     "path": "~/design/git_forks/cores/usb_bridge",
+        // },
+
+        // {
+        //     "name": "FPGA-USB-Device",
+        //     "path": "~/design/FPGA-USB-Device",
+        // },
+
+        // {
+        //     "name": "TinyFPGA-Bootloader",
+        //     "path": "~/design/git_forks/TinyFPGA-Bootloader",
+        // },
+
+        // {
+        //     "name": "pomodoro@gregfreeman.org",
+        //     "path": "~/design/cinnamon-spices-applets/pomodoro@gregfreeman.org/files/pomodoro@gregfreeman.org",
+        // },
+
+        {
+            "name": "oct640-7a-usb",
+            /*"folder_exclude_patterns": [],*/
+            "path": "calibration/oct640-7a-usb",
+        },
+
+        {
+            "name": "fpga-bitstream",
+            /*"folder_exclude_patterns": [],*/
+            "path": "fpga-bitstream",
+        },
+
+        {
+            "name": "riscv-firmware",
+            /*"folder_exclude_patterns": [],*/
+            "path": "riscv-firmware",
+        },
+
+        {
+            "name": "oct640_7a_platform",
+            /*"folder_exclude_patterns": [],*/
+            "path": "oct640_7a_platform",
+        },
+
+        {
+            "name": "dutb",
+            /*"folder_exclude_patterns": [],*/
+            "path": "dutb",
+        },
+
+        // {
+        //     "name": "oct640_7a_tiny_bootloader",
+        //     "folder_exclude_patterns": [],
+        //     "path": "~/design/oct640_7a_tiny_bootloader",
+        // },
+
+
+        // {
+        //     "name": "foo_uvm_viv",
+        //     "folder_exclude_patterns": [],
+        //     "path": "~/design/foo_uvm_viv",
+        // },
+
+        {
+            "name": "scrpt",
+            "folder_exclude_patterns": [                "__pycache__",
+            ],
+            "path": "scrpt",
+        },
+
+        {
+            "name": "csi_tb",
+            "folder_exclude_patterns": [],
+            "path": "~/design/csi_tb",
+        },
+
+        {
+            "name": "riscv-firmware-oko",
+            /*"folder_exclude_patterns":["__pycache__"],*/
+            /*"file_include_patterns":[],*/
+            "path": "riscv-firmware-oko",
+        },
+
+
+    ],
+}
